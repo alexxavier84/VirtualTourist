@@ -7,11 +7,18 @@
 //
 
 import UIKit
+import MapKit
 
-class ViewController: UIViewController {
+class PhotoAlbumViewController: UIViewController {
 
+    
+    @IBOutlet weak var mapView: MKMapView!
+    
+    var coordinate: CLLocationCoordinate2D?
+    
     override func viewDidLoad() {
         super.viewDidLoad()
+        print(coordinate)
         // Do any additional setup after loading the view, typically from a nib.
     }
 
