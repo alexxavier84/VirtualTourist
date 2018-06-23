@@ -18,15 +18,21 @@ extension FlickerClient{
         
         // MARK: URLs
         static let ApiScheme = "https"
-        static let ApiHost = "api.flicker.com"
+        static let ApiHost = "api.flickr.com"
         static let ApiPath = "/services/rest/"
+        
+        // MARK: Const
+        static let Json = "json"
+        
     }
     
     // MARK: Methods
     struct Methods {
         
         // MARK: Photo search
-        static let PhotoSearch = "flicker.photos.search"
+        static let PhotoSearch = "flickr.photos.search"
+        static let PhotoInfo = "flickr.photos.getInfo"
+        static let PhotoGetSizes = "flickr.photos.getSizes"
         
     }
     
@@ -38,11 +44,13 @@ extension FlickerClient{
     // MARK: Parameter Keys
     struct ParameterKeys {
         static let ApiKey = "api_key"
+        static let PhotoId = "photo_id"
         static let Method = "method"
         static let Latitude = "lat"
         static let Longitude = "lon"
         static let Radius = "radius"
         static let Format = "format"
+        static let Nojsoncallback = "nojsoncallback"
     }
     
     // MARK: JSON Body Keys
@@ -60,10 +68,22 @@ extension FlickerClient{
         static let Owner = "owner"
         static let Secret = "secret"
         static let Title = "title"
+        static let Description = "description"
         static let Page = "page"
         static let Pages = "pages"
         static let Perpage = "perpage"
         static let Total = "total"
+        static let Urls = "urls"
+        static let Url = "url"
+        static let Sizes = "sizes"
+        static let Size = "size"
+        static let Source = "source"
+        static let Label = "label"
+        static let Content = "_content"
         
+    }
+    
+    struct JSONResponseValues {
+        static let Large = "Large Square"
     }
 }

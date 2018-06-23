@@ -11,11 +11,16 @@ import MapKit
 
 @objc class PinCoordinate : NSObject, MKAnnotation{
     
-    let pin: Pin
+    let pin: Pin?
     let coordinate: CLLocationCoordinate2D
     
     init(_ pin: Pin) {
         self.pin = pin
         self.coordinate = CLLocationCoordinate2D(latitude: pin.latitude, longitude: pin.longitude)
+    }
+    
+    init(_ coordinate: CLLocationCoordinate2D) {
+        self.pin = nil
+        self.coordinate = CLLocationCoordinate2D(latitude: coordinate.latitude, longitude: coordinate.longitude)
     }
 }

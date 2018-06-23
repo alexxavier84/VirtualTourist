@@ -22,8 +22,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         //Implement the closure for showing loading message while loading the persistant store
         dataController.load()
         
-        let travelLocationsMapViewController = window?.rootViewController as! TravelLocationsMapViewController
-        //let travelLocationsMapViewController = navigationController.topViewController as! TravelLocationsMapViewController
+        let navigationController = window?.rootViewController as! UINavigationController
+        let travelLocationsMapViewController = navigationController.topViewController as! TravelLocationsMapViewController
         travelLocationsMapViewController.dataController = dataController
         
         
