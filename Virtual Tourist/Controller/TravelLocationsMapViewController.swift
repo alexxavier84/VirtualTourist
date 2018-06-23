@@ -18,6 +18,7 @@ class TravelLocationsMapViewController: UIViewController {
     
     let locationManager = CLLocationManager()
     var coordinate: CLLocationCoordinate2D?
+    var pinCoordinate: PinCoordinate?
     
     var dataController:DataController!
     var fetchedResultsController: NSFetchedResultsController<Pin>!
@@ -52,6 +53,7 @@ class TravelLocationsMapViewController: UIViewController {
         
         //Configure and get data from CoreData
         setupFetchedResultsController()
+        
         SharedData.pinCoordinatesFromFetchedData(fetchedResultsController.fetchedObjects)
         
         //Configure long press in the map
@@ -63,13 +65,12 @@ class TravelLocationsMapViewController: UIViewController {
     
     override func viewWillAppear(_ animated: Bool) {
         self.loadAnnotations()
+        if fetchedResultsController == nil {
+            setupFetchedResultsController()
+            SharedData.pinCoordinatesFromFetchedData(fetchedResultsController.fetchedObjects)
+        } 
         
         self.navigationController?.isNavigationBarHidden = true
-    }
-    
-    override func didReceiveMemoryWarning() {
-        super.didReceiveMemoryWarning()
-        // Dispose of any resources that can be recreated.
     }
     
     override func viewWillDisappear(_ animated: Bool) {
@@ -77,11 +78,19 @@ class TravelLocationsMapViewController: UIViewController {
         self.navigationController?.isNavigationBarHidden = false
     }
     
+    override func viewDidDisappear(_ animated: Bool) {
+        super.viewDidDisappear(animated)
+        self.fetchedResultsController = nil
+    }
+    
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        SharedData.pinCoordinatesFromFetchedData(fetchedResultsController.fetchedObjects)
         
         if segue.identifier == "PhotoAlbumViewSegue"{
             if let photoAlbumViewController = segue.destination as? PhotoAlbumViewController{
                 photoAlbumViewController.coordinate = self.coordinate ?? nil
+                photoAlbumViewController.pin = SharedData.getPinFromCoordinate((self.coordinate?.longitude)!, (self.coordinate?.latitude)!)
+                photoAlbumViewController.dataController = self.dataController
             }
         }
     }
@@ -115,18 +124,18 @@ extension TravelLocationsMapViewController : UIGestureRecognizerDelegate{
     @objc func handleTap(gestureReconizer: UILongPressGestureRecognizer) {
         
         let location = gestureReconizer.location(in: mapView)
-        coordinate = mapView.convert(location,toCoordinateFrom: mapView)
+        let annotationCoordinate = mapView.convert(location,toCoordinateFrom: mapView)
+        
+        let pin = Pin(context: dataController.viewContext)
+        pin.latitude = (annotationCoordinate.latitude)
+        pin.longitude = (annotationCoordinate.longitude)
+        pin.photos = nil
+        try? dataController.viewContext.save()
         
         // Add annotation:
         let annotation = MKPointAnnotation()
-        annotation.coordinate = coordinate!
+        annotation.coordinate = annotationCoordinate
         mapView.addAnnotation(annotation)
-        
-        let pin = Pin(context: dataController.viewContext)
-        pin.latitude = (coordinate?.latitude)!
-        pin.longitude = (coordinate?.longitude)!
-        try? dataController.viewContext.save()
-        
     }
 }
 

@@ -10,7 +10,7 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "Virtual Tourist/Model/Clients/Flicker/FlickerConvenience.swift"
-            timestampString = "551435015.620013"
+            timestampString = "551476811.916248"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "52"
@@ -25,29 +25,13 @@
             shouldBeEnabled = "Yes"
             ignoreCount = "0"
             continueAfterRunningActions = "No"
-            filePath = "Virtual Tourist/Controller/PhotoAlbumViewController.swift"
-            timestampString = "551435015.620101"
+            filePath = "Virtual Tourist/Model/Clients/Flicker/FlickerConvenience.swift"
+            timestampString = "551476811.916343"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "79"
-            endingLineNumber = "79"
-            landmarkName = "observeValue(forKeyPath:of:change:context:)"
-            landmarkType = "7">
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
-            shouldBeEnabled = "Yes"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "Virtual Tourist/Controller/TravelLocationsMapViewController.swift"
-            timestampString = "551435015.6201741"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "117"
-            endingLineNumber = "117"
-            landmarkName = "handleTap(gestureReconizer:)"
+            startingLineNumber = "15"
+            endingLineNumber = "15"
+            landmarkName = "getPhotosInfoFromSearch(longitude:latitude:completionHandlerForPhotosFromSearch:)"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>

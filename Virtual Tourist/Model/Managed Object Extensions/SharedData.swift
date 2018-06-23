@@ -7,6 +7,7 @@
 //
 
 import Foundation
+import MapKit
 
 class SharedData: NSObject {
     
@@ -22,6 +23,16 @@ class SharedData: NSObject {
                 SharedData.shared.pinCoordinates.append(PinCoordinate(pin))
             }
         }
+    }
+    
+    static func getPinFromCoordinate(_ longitude: CLLocationDegrees, _ latitude: CLLocationDegrees) -> Pin? {
+        
+        for pinCoordinate in SharedData.shared.pinCoordinates{
+            if pinCoordinate.coordinate.longitude == longitude && pinCoordinate.coordinate.latitude == latitude{
+                return pinCoordinate.pin!
+            }
+        }
+        return nil
     }
     
 }

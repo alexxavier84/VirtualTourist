@@ -25,12 +25,12 @@ class FlickerClient : NSObject{
         let task = session.dataTask(with: request as URLRequest) { (data, response, error) in
             
             func sendError(_ error: NSError) {
+                print(error)
                 completionHandlerForGET(nil, error)
             }
             
             /* 5/6. Parse the data and use the data (happens in completion handler) */
             guard error == nil else {
-                print(error)
                 sendError(error! as NSError)
                 return
             }
@@ -61,12 +61,12 @@ class FlickerClient : NSObject{
         let task = session.dataTask(with: imageURL) { (data, response, error) in
             
             func sendError(_ error: NSError) {
+                print(error)
                 completionHandlerForDownloadImage(nil, error)
             }
             
             /* 5/6. Parse the data and use the data (happens in completion handler) */
             guard error == nil else {
-                print(error)
                 sendError(error! as NSError)
                 return
             }
@@ -125,7 +125,7 @@ class FlickerClient : NSObject{
             let queryItem = URLQueryItem(name: key, value: "\(value)")
             components.queryItems!.append(queryItem)
         }
-        print(components.url!)
+        
         return components.url!
     }
     
