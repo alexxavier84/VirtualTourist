@@ -28,7 +28,7 @@ class TravelLocationsMapViewController: UIViewController {
         let sortDescriptor = NSSortDescriptor(key: "latitude", ascending: true)
         fetchRequest.sortDescriptors = [sortDescriptor]
         
-        fetchedResultsController = NSFetchedResultsController(fetchRequest: fetchRequest, managedObjectContext: dataController.viewContext, sectionNameKeyPath: nil, cacheName: "pins")
+        fetchedResultsController = NSFetchedResultsController(fetchRequest: fetchRequest, managedObjectContext: dataController.viewContext, sectionNameKeyPath: nil, cacheName: nil)
         fetchedResultsController.delegate = self
         do{
             try fetchedResultsController.performFetch()
@@ -132,10 +132,14 @@ extension TravelLocationsMapViewController : UIGestureRecognizerDelegate{
             let pin = Pin(context: self.dataController.viewContext)
             pin.latitude = annotationCoordinate.latitude as Double
             pin.longitude = annotationCoordinate.longitude as Double
-            pin.photos = nil
             
             if self.dataController.viewContext.hasChanges{
-                try? self.dataController.viewContext.save()
+                do{
+                    try self.dataController.viewContext.save()
+                } catch {
+                    print(error)
+                }
+                
             }
             
             setupFetchedResultsController()
