@@ -94,13 +94,13 @@ extension FlickerClient {
     func downloadImagesFromUrl(photoUrl: String, completionHandlerForDownloadImage: @escaping(_ imageData: Data?, _ error: NSError?) -> Void){
         // if an image exists at the url, set the image and title
         
-        let imageURL = URL(string: photoUrl)
-        
-        
-        if let imageData = try? Data(contentsOf: imageURL!) {
+        FlickerClient.sharedInstance().taskForDownloadImage(imageUrlParam: photoUrl) { (imageData, error) in
+            guard error == nil else {
+                completionHandlerForDownloadImage(nil, NSError(domain: "downloadImagesFromUrl", code: 0, userInfo: [NSLocalizedDescriptionKey: "Could not download the image"]))
+                return
+            }
+            
             completionHandlerForDownloadImage(imageData, nil)
-        } else {
-            completionHandlerForDownloadImage(nil, NSError(domain: "downloadImagesFromUrl", code: 0, userInfo: [NSLocalizedDescriptionKey: "Could not download the image"]))
         }
     }
     

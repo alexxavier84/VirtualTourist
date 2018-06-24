@@ -58,7 +58,7 @@ class TravelLocationsMapViewController: UIViewController {
         
         //Configure long press in the map
         let longpressGestureRecognizer = UILongPressGestureRecognizer(target: self, action: #selector(TravelLocationsMapViewController.handleTap(gestureReconizer:)))
-        longpressGestureRecognizer.minimumPressDuration = .init(1.0)
+        longpressGestureRecognizer.minimumPressDuration = .init(0.5)
         longpressGestureRecognizer.delegate = self
         mapView.addGestureRecognizer(longpressGestureRecognizer)
     }
@@ -88,8 +88,8 @@ class TravelLocationsMapViewController: UIViewController {
         
         if segue.identifier == "PhotoAlbumViewSegue"{
             if let photoAlbumViewController = segue.destination as? PhotoAlbumViewController{
-                photoAlbumViewController.coordinate = self.coordinate ?? nil
                 photoAlbumViewController.pin = SharedData.getPinFromCoordinate((self.coordinate?.longitude)!, (self.coordinate?.latitude)!)
+                photoAlbumViewController.coordinate = self.coordinate ?? nil
                 photoAlbumViewController.dataController = self.dataController
             }
         }
@@ -123,19 +123,30 @@ extension TravelLocationsMapViewController : UIGestureRecognizerDelegate{
     
     @objc func handleTap(gestureReconizer: UILongPressGestureRecognizer) {
         
-        let location = gestureReconizer.location(in: mapView)
-        let annotationCoordinate = mapView.convert(location,toCoordinateFrom: mapView)
-        
-        let pin = Pin(context: dataController.viewContext)
-        pin.latitude = (annotationCoordinate.latitude)
-        pin.longitude = (annotationCoordinate.longitude)
-        pin.photos = nil
-        try? dataController.viewContext.save()
-        
-        // Add annotation:
-        let annotation = MKPointAnnotation()
-        annotation.coordinate = annotationCoordinate
-        mapView.addAnnotation(annotation)
+        if !(gestureReconizer.state == .began){
+            return
+        }else {
+            let location = gestureReconizer.location(in: mapView)
+            let annotationCoordinate = mapView.convert(location,toCoordinateFrom: mapView)
+            
+            let pin = Pin(context: self.dataController.viewContext)
+            pin.latitude = annotationCoordinate.latitude as Double
+            pin.longitude = annotationCoordinate.longitude as Double
+            pin.photos = nil
+            
+            if self.dataController.viewContext.hasChanges{
+                try? self.dataController.viewContext.save()
+            }
+            
+            setupFetchedResultsController()
+            
+            performUIUpdatesOnMain {
+                // Add annotation:
+                let annotation = MKPointAnnotation()
+                annotation.coordinate = annotationCoordinate
+                self.mapView.addAnnotation(annotation)
+            }
+        }
     }
 }
 

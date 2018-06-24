@@ -52,7 +52,10 @@ class PhotoAlbumViewController: UIViewController {
         mapView.showsScale = true
         mapView.showsCompass = true
         
-        setupFetchedResultsController()
+        if (fetchedResultsController == nil){
+            setupFetchedResultsController()
+        }
+        
 
         newCollectionTouch.isEnabled = false
         
@@ -60,6 +63,17 @@ class PhotoAlbumViewController: UIViewController {
         
         if (fetchedResultsController.fetchedObjects?.count)! == 0 {
             FlickerClient.sharedInstance().getPhotosInfoFromSearch(longitude: (pin?.longitude)!, latitude: (pin?.latitude)!) { (photoIds, error) in
+                
+                func showErrorMessage(_ errorMessage: String) {
+                    performUIUpdatesOnMain {
+                        let okAction = UIAlertAction(title: "OK", style: .cancel) { (action) in
+                        }
+                        
+                        let alert = UIAlertController(title: "", message: errorMessage, preferredStyle: .alert)
+                        alert.addAction(okAction)
+                        self.present(alert, animated: true, completion: nil)
+                    }
+                }
                 
                 //Loop through each photos and get the photo url
                 if let photoIds = photoIds{
@@ -71,21 +85,26 @@ class PhotoAlbumViewController: UIViewController {
                         maxPicCount = photoIds.count % 20
                     }
                     
-                    for i in 1...maxPicCount {
-                        let index = arc4random_uniform(UInt32(photoIds.count))
-                        FlickerClient.sharedInstance().getPhotoUrl(photoId: photoIds[Int(index)], completionHandlerForPhotoUrl: { (photoUrl, error) in
-                            
-                            if let photoUrl = photoUrl {
-                                self.photoUrlArray.append(photoUrl)
-                            }
-                            
-                            if self.photoUrlArray.count == maxPicCount{
-                                performUIUpdatesOnMain {
-                                    self.collectionView.reloadData()
-                                    self.newCollectionTouch.isEnabled = true
+                    if !(maxPicCount == 0)
+                    {
+                        for i in 1...maxPicCount {
+                            let index = arc4random_uniform(UInt32(photoIds.count))
+                            FlickerClient.sharedInstance().getPhotoUrl(photoId: photoIds[Int(index)], completionHandlerForPhotoUrl: { (photoUrl, error) in
+                                
+                                if let photoUrl = photoUrl {
+                                    self.photoUrlArray.append(photoUrl)
                                 }
-                            }
-                        })
+                                
+                                if self.photoUrlArray.count == maxPicCount{
+                                    performUIUpdatesOnMain {
+                                        self.collectionView.reloadData()
+                                        self.newCollectionTouch.isEnabled = true
+                                    }
+                                }
+                            })
+                        }
+                    } else {
+                        showErrorMessage("No photos to show for this location")
                     }
                 }
                 
@@ -99,7 +118,9 @@ class PhotoAlbumViewController: UIViewController {
     
     override func viewWillAppear(_ animated: Bool) {
         self.addAnnotation()
-        setupFetchedResultsController()
+        if (fetchedResultsController == nil){
+            setupFetchedResultsController()
+        }
     }
     
     override func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
@@ -170,6 +191,7 @@ extension PhotoAlbumViewController : UICollectionViewDataSource, UICollectionVie
     
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         if (fetchedResultsController.fetchedObjects?.count)! > 0 {
+            print((fetchedResultsController.fetchedObjects?.count)!)
             return (fetchedResultsController.fetchedObjects?.count)!
         }else{
             return self.photoUrlArray.count ?? 0
@@ -211,6 +233,16 @@ extension PhotoAlbumViewController : UICollectionViewDataSource, UICollectionVie
     
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         
+        let photoToDelete = fetchedResultsController.object(at: indexPath)
+        dataController.viewContext.delete(photoToDelete)
+        
+        if dataController.viewContext.hasChanges{
+            try? dataController.viewContext.save()
+            setupFetchedResultsController()
+        }
+        
+        
+        self.collectionView.reloadData()
     }
     
     
