@@ -28,12 +28,17 @@ class PhotoAlbumViewController: UIViewController {
     fileprivate func setupFetchedResultsController(){
         
         let fetchRequest: NSFetchRequest<Photo> = Photo.fetchRequest()
-        let predicate = NSPredicate(format: "pin == %@", pin!)
-        fetchRequest.predicate = predicate
+        
+        
+        if let pin = pin {
+            let predicate = NSPredicate(format: "pin == %@", pin)
+            fetchRequest.predicate = predicate
+        }
+        
         let sortDescriptor = NSSortDescriptor(key: "photoUrl", ascending: true)
         fetchRequest.sortDescriptors = [sortDescriptor]
         
-        fetchedResultsController = NSFetchedResultsController(fetchRequest: fetchRequest, managedObjectContext: dataController.viewContext, sectionNameKeyPath: nil, cacheName: "\(pin!)_photos")
+        fetchedResultsController = NSFetchedResultsController(fetchRequest: fetchRequest, managedObjectContext: dataController.viewContext, sectionNameKeyPath: nil, cacheName: nil)
         fetchedResultsController.delegate = self
         do{
             try fetchedResultsController.performFetch()
@@ -56,13 +61,10 @@ class PhotoAlbumViewController: UIViewController {
             setupFetchedResultsController()
         }
         
-
         newCollectionTouch.isEnabled = false
         
-        print(fetchedResultsController.fetchedObjects)
-        
-        if (fetchedResultsController.fetchedObjects?.count)! == 0 {
-            FlickerClient.sharedInstance().getPhotosInfoFromSearch(longitude: (pin?.longitude)!, latitude: (pin?.latitude)!) { (photoIds, error) in
+        if let fetchedObjects = fetchedResultsController.fetchedObjects, (fetchedObjects.count) == 0 {
+            FlickerClient.sharedInstance().getPhotosInfoFromSearch(longitude: (pin?.longitude) ?? 0, latitude: (pin?.latitude) ?? 0) { (photoIds, error) in
                 
                 func showErrorMessage(_ errorMessage: String) {
                     performUIUpdatesOnMain {
@@ -141,8 +143,26 @@ class PhotoAlbumViewController: UIViewController {
     @IBAction func newCollectionLoad(_ sender: Any) {
         newCollectionTouch.isEnabled = false
         self.photoUrlArray.removeAll()
+        print(self.photoUrlArray)
         
-        FlickerClient.sharedInstance().getPhotosInfoFromSearch(longitude: (coordinate?.longitude)!, latitude: (coordinate?.latitude)!) { (photoIds, error) in
+        let photosToDelete = self.fetchedResultsController.fetchedObjects
+        
+        if let photosToDelete = photosToDelete{
+            for photoToDelete in photosToDelete{
+                self.dataController.viewContext.delete(photoToDelete)
+            }
+            
+        }
+        
+        sleep(5)
+        if dataController.viewContext.hasChanges{
+            try? self.dataController.viewContext.save()
+        }
+        
+        print(self.fetchedResultsController.fetchedObjects)
+        
+        
+        FlickerClient.sharedInstance().getPhotosInfoFromSearch(longitude: (coordinate?.longitude) ?? 0, latitude: (coordinate?.latitude) ?? 0) { (photoIds, error) in
             
             //Loop through each photos and get the photo url
             if let photoIds = photoIds{
@@ -154,7 +174,7 @@ class PhotoAlbumViewController: UIViewController {
                     maxPicCount = photoIds.count % 20
                 }
                 
-                for i in 1...maxPicCount {
+                for _ in 1...maxPicCount {
                     let index = arc4random_uniform(UInt32(photoIds.count))
                     FlickerClient.sharedInstance().getPhotoUrl(photoId: photoIds[Int(index)], completionHandlerForPhotoUrl: { (photoUrl, error) in
                         
@@ -181,20 +201,11 @@ class PhotoAlbumViewController: UIViewController {
 
 extension PhotoAlbumViewController : UICollectionViewDataSource, UICollectionViewDelegate {
     
-    /*func numberOfSections(in collectionView: UICollectionView) -> Int {
-        if let sections = fetchedResultsController.sections, sections.count > 0 {
-            return sections.count
-        }else{
-            return 1
-        }
-    }*/
-    
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        if (fetchedResultsController.fetchedObjects?.count)! > 0 {
-            print((fetchedResultsController.fetchedObjects?.count)!)
-            return (fetchedResultsController.fetchedObjects?.count)!
+        if let fetchedObject = fetchedResultsController.fetchedObjects, (fetchedObject.count) > 0 {
+            return fetchedObject.count
         }else{
-            return self.photoUrlArray.count ?? 0
+            return self.photoUrlArray.count
         }
         
         
@@ -204,7 +215,7 @@ extension PhotoAlbumViewController : UICollectionViewDataSource, UICollectionVie
         
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "flickrImageReuseIdentifier", for: indexPath) as! PhotoAlbumViewCell
         
-        if self.photoUrlArray.count > 0 {
+        if self.photoUrlArray.count > 0 && self.photoUrlArray.count > indexPath.item {
             let photoUrl = self.photoUrlArray[indexPath.item]
             FlickerClient.sharedInstance().downloadImagesFromUrl(photoUrl: photoUrl, completionHandlerForDownloadImage: { (photoData, error) in
                 
@@ -224,7 +235,9 @@ extension PhotoAlbumViewController : UICollectionViewDataSource, UICollectionVie
         }else{
             let photo = fetchedResultsController.object(at: indexPath)
             performUIUpdatesOnMain {
-                cell.photoAlbumCellImage.image = UIImage(data: photo.image!)
+                if let imageData = photo.image{
+                    cell.photoAlbumCellImage.image = UIImage(data: imageData)
+                }
             }
         }
         

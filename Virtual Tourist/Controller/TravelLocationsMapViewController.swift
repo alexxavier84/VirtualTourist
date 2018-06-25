@@ -44,7 +44,7 @@ class TravelLocationsMapViewController: UIViewController {
         //Configure Map
         self.requestLocationAccess()
         mapView.mapType = .standard
-        mapView.showsUserLocation = true
+        //mapView.showsUserLocation = true
         mapView.showsScale = true
         mapView.showsCompass = true
         mapView.delegate = self
